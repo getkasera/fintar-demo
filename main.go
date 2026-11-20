@@ -134,7 +134,9 @@ func createTransaction(orderID string, it Item) (*transaction, error) {
 		// renders the item lines, and Fintar's dashboard shows who bought.
 		// Fintar rejects order_items whose Σ price×quantity ≠ amount, so the
 		// amount above stays authoritative.
-		"customer": map[string]string{"name": "Demo Buyer"},
+		// Fintar requires an email or phone on every transaction. A dummy on a
+		// reserved domain (RFC 2606): nobody receives the sandbox receipt.
+		"customer": map[string]string{"name": "Demo Buyer", "email": "pembeli@example.com"},
 		"order_items": []map[string]any{
 			{"name": it.Name, "price": it.Price, "quantity": 1},
 		},
