@@ -17,8 +17,9 @@ ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 REPO="$ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/fintar-demo"
 
 aws ecr get-login-password | docker login --username AWS --password-stdin "${REPO%%/*}"
-docker build --platform linux/arm64 -t "$REPO:$TAG" .
-docker push "$REPO:$TAG"
+# No provenance/SBOM: ECR rejects Docker Desktop's attestation manifests
+# against an immutable tag, leaving a 1.5 KB stub instead of the image.
+docker buildx build --platform linux/arm64 --provenance=false --sbom=false -t "$REPO:$TAG" --push .
 
 # Same definition as running, new image.
 CUR=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].taskDefinition' --output text)
