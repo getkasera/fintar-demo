@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
+  <title data-i18n="title.store">Fintar Threads · demo Fintar</title>
+  <script>
+    // Theme before first paint. Light like fintar.id unless the visitor picked dark.
+    if (localStorage.getItem("theme") === "dark")
+      document.documentElement.dataset.theme = "dark";
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a class="brand" href="index.html" aria-label="Fintar demo"><img class="logo-light" src="brand/logo.svg" width="128" height="28" alt="Fintar"><img class="logo-dark" src="brand/logo-white.svg" width="128" height="28" alt=""><span class="brand-tag">Demo</span></a>
+      <a href="nonapi.html" data-i18n="nav.case0">0 · Tanpa kode</a>
+      <a href="store.html?case=redirect" data-i18n="nav.case1">1 · Redirect</a>
+      <a href="store.html?case=webhook" data-i18n="nav.case2">2 · Webhook</a>
+      <a href="store.html?case=polling" data-i18n="nav.case3">3 · Polling</a>
+      <a href="langganan.html" data-i18n="nav.case4">4 · Langganan</a>
+      <button id="lang-toggle" class="toggle" title="Bahasa / Language"></button>
+      <button id="theme-toggle" class="toggle" title="Tema / Theme"></button>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Fintar Threads</h1>
+    <div class="note" id="case-copy"></div>
+
+    <!-- Animated flow for this case (web/src/main.tsx, Remotion). The
+         sequence diagram below stays as the exact reference. -->
+    <div data-flow class="flow-slot"></div>
+
+    <!-- Who talks to whom, per case — one sequence diagram each; the inline
+         script below keeps only the one matching ?case=. diagram.js renders
+         them with mermaid from a pinned CDN; if that CDN is unreachable,
+         this readable source is what you see instead, in the current
+         language. Each <pre> holds the English source; the <template>
+         right after it holds the Indonesian one — diagram.js picks by
+         lang(). The flows mirror main.go — read it to check them. -->
+    <pre class="mermaid" data-case="redirect">
+sequenceDiagram
+    actor B as Buyer
+    participant S as Shop backend
+    participant K as Fintar
+    B->>S: click Beli - POST /api/orders {item_id, case}
+    Note over S: price looked up server-side, never taken from the client
+    S->>K: POST /v1/transactions (Idempotency-Key: order id)
+    K-->>S: payreq id + checkout_url
+    S-->>B: checkout_url
+    B->>K: redirected to hosted checkout - pays QRIS
+    K-->>B: return_url back to the order page (?status=succeeded)
+    Note over B,K: a query param proves nothing - the shop backend never learns of the payment (cases 2 and 3 fix this)
+    </pre>
+    <template class="mermaid-id">
+sequenceDiagram
+    actor B as Pembeli
+    participant S as Backend toko
+    participant K as Fintar
+    B->>S: klik Beli - POST /api/orders {item_id, case}
+    Note over S: harga dicari di sisi server, tidak pernah diambil dari klien
+    S->>K: POST /v1/transactions (Idempotency-Key: id pesanan)
+    K-->>S: id payreq + checkout_url
+    S-->>B: checkout_url
+    B->>K: diarahkan ke hosted checkout - bayar QRIS
+    K-->>B: return_url kembali ke halaman pesanan (?status=succeeded)
+    Note over B,K: query param tidak membuktikan apa pun - backend toko tidak pernah tahu soal pembayarannya (case 2 dan 3 membereskan ini)
+    </template>
+    <pre class="mermaid" data-case="webhook">
+sequenceDiagram
+    actor B as Buyer
+    participant S as Shop backend
+    participant K as Fintar
+    B->>S: click Beli - POST /api/orders {item_id, case}
+    S->>K: POST /v1/transactions (Idempotency-Key: order id)
+    K-->>S: payreq id + checkout_url
+    S-->>B: order page + checkout link
+    B->>K: pays QRIS on hosted checkout
+    K->>S: POST /webhook - signed payment.paid event
+    S->>S: verify HMAC signature (constant-time) - mark order paid
+    S-->>K: 200 OK (non-2xx would make Fintar retry)
+    B->>S: order page polls GET /api/orders/:id (our backend only, never Fintar)
+    S-->>B: status: paid
+    </pre>
+    <template class="mermaid-id">
+sequenceDiagram
+    actor B as Pembeli
+    participant S as Backend toko
+    participant K as Fintar
+    B->>S: klik Beli - POST /api/orders {item_id, case}
+    S->>K: POST /v1/transactions (Idempotency-Key: id pesanan)
+    K-->>S: id payreq + checkout_url
+    S-->>B: halaman pesanan + tautan checkout
+    B->>K: bayar QRIS di hosted checkout
+    K->>S: POST /webhook - event payment.paid bertanda tangan
+    S->>S: verifikasi tanda tangan HMAC (constant-time) - tandai pesanan paid
+    S-->>K: 200 OK (selain 2xx membuat Fintar mengulang kirim)
+    B->>S: halaman pesanan mem-polling GET /api/orders/:id (backend kami saja, tidak pernah ke Fintar)
+    S-->>B: status: paid
+    </template>
+    <pre class="mermaid" data-case="polling">
+sequenceDiagram
+    actor B as Buyer
+    participant S as Shop backend
+    participant K as Fintar
+    B->>S: click Beli - POST /api/orders {item_id, case}
+    S->>K: POST /v1/transactions (Idempotency-Key: order id)
+    K-->>S: payreq id + checkout_url
+    S-->>B: order page + checkout link
+    B->>K: pays QRIS on hosted checkout
+    loop while pending - each time the order page checks in
+        B->>S: GET /api/orders/:id
+        S->>K: GET /v1/transactions/:id - paid yet?
+        K-->>S: status (pending, then succeeded)
+        S-->>B: status
+    end
+    </pre>
+    <template class="mermaid-id">
+sequenceDiagram
+    actor B as Pembeli
+    participant S as Backend toko
+    participant K as Fintar
+    B->>S: klik Beli - POST /api/orders {item_id, case}
+    S->>K: POST /v1/transactions (Idempotency-Key: id pesanan)
+    K-->>S: id payreq + checkout_url
+    S-->>B: halaman pesanan + tautan checkout
+    B->>K: bayar QRIS di hosted checkout
+    loop selama pending - tiap kali halaman pesanan mengecek
+        B->>S: GET /api/orders/:id
+        S->>K: GET /v1/transactions/:id - sudah dibayar?
+        K-->>S: status (pending, lalu succeeded)
+        S-->>B: status
+    end
+    </template>
+
+    <div class="grid" id="items"></div>
+  </main>
+
+  <footer>
+    <span data-i18n="footer.tag">Toko demo Fintar</span> —
+    <a href="https://github.com/getkasera/fintar-demo/blob/main/public/store.html"
+       data-i18n="footer.page">kode halaman ini</a> ·
+    <a href="https://github.com/getkasera/fintar-demo/blob/main/main.go">main.go</a> ·
+    <a href="https://github.com/getkasera/fintar-demo" data-i18n="footer.repo">repo GitHub</a>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="store.js"></script>
+  <script>
+    // Which integration flow is this page demonstrating? Same shop, same
+    // buttons — the ?case= parameter only changes what the backend and the
+    // order page do after checkout.
+    const CASE = new URLSearchParams(location.search).get("case") || "redirect";
+
+    // Keep only this case's sequence diagram (diagram.js, loaded below,
+    // renders whatever pre.mermaid is left in the DOM).
+    document.querySelectorAll("pre.mermaid[data-case]").forEach((p) => {
+      if (p.dataset.case !== CASE) {
+        p.nextElementSibling?.remove(); // its Indonesian <template> twin
+        p.remove();
+      }
+    });
+
+    // Per-case explainer, in both languages (static strings live in
+    // i18n.js; this copy is specific to this page).
+    const COPY = {
+      id: {
+        redirect: `<strong>Case 1 — redirect saja.</strong> Saat Anda
+          mengklik <em>Beli</em>, backend kami membuat payment request dengan
+          API key-nya (browser tidak pernah melihat key itu, dan tidak
+          menentukan harga) lalu Anda langsung diarahkan ke checkout Fintar —
+          yang kini menampilkan <code>order_items</code> yang kami kirim,
+          jadi pembeli melihat baris barangnya, bukan sekadar nominal. Itu
+          saja integrasinya — tapi ada jebakannya: setelah Anda membayar,
+          <em>toko ini tidak tahu apa-apa</em>. Tidak ada yang memberitahunya.
+          Case 2 dan 3 ada persis untuk memperbaiki itu.`,
+        webhook: `<strong>Case 2 — webhook.</strong> Pembelian yang sama,
+          tapi backend kami sudah mendaftarkan URL webhook ke Fintar. Begitu
+          Anda membayar, Fintar mengirim POST event <code>payment.paid</code>
+          bertanda tangan ke server kami; server memverifikasi tanda tangan
+          HMAC-nya lalu menandai pesanan paid. Halaman pesanan yang Anda tuju
+          hanya mem-polling <em>backend kami sendiri</em> — tidak pernah ke
+          Fintar — dan berubah menjadi paid saat webhook tiba.`,
+        polling: `<strong>Case 3 — polling.</strong> Pembelian yang sama,
+          tanpa webhook: tiap kali halaman pesanan menanyakan status ke
+          backend kami, backend bertanya ke Fintar
+          <code>GET /v1/transactions/:id</code> — "sudah dibayar?" — dan
+          meneruskan jawabannya. Lebih cerewet daripada webhook, tapi tidak
+          butuh URL publik, jadi pas sekali untuk pengembangan lokal.`,
+      },
+      en: {
+        redirect: `<strong>Case 1 — redirect only.</strong> When you click
+          <em>Buy</em>, our backend creates a payment request with its API key
+          (the browser never sees the key, nor sets the price) and you are
+          redirected straight to Fintar's checkout — which now renders the
+          <code>order_items</code> we send, so the buyer sees the actual item
+          line, not just an amount. That's the entire integration — but note
+          the catch: after you pay, <em>this shop has no idea</em>. Nothing
+          tells it. Cases 2 and 3 exist to fix exactly that.`,
+        webhook: `<strong>Case 2 — webhook.</strong> Same purchase, but our
+          backend has registered a webhook URL with Fintar. The moment you pay,
+          Fintar POSTs a signed <code>payment.paid</code> event to our server,
+          which verifies the HMAC signature and marks the order paid. The order
+          page you'll land on polls <em>our own backend only</em> — never
+          Fintar — and flips to paid when the webhook arrives.`,
+        polling: `<strong>Case 3 — polling.</strong> Same purchase, but no
+          webhook: each time the order page asks our backend for status, the
+          backend asks Fintar <code>GET /v1/transactions/:id</code> — "paid
+          yet?" — and passes the answer on. Chattier than a webhook, but it
+          needs no public URL, which makes it perfect for local development.`,
+      },
+    };
+    function renderCopy() {
+      const c = COPY[lang()];
+      document.getElementById("case-copy").innerHTML = c[CASE] || c.redirect;
+    }
+    renderCopy();
+    document.addEventListener("langchange", renderCopy);
+
+    // Render the catalog. Prices shown here are labels; the server has the
+    // real table (see main.go — never trust the client with an amount). The
+    // buy button carries data-i18n so a language switch relabels it too.
+    const grid = document.getElementById("items");
+    for (const it of ITEMS) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="thumb"></div>
+        <div class="name"></div>
+        <div class="price">${formatRupiah(it.price)}</div>
+        <button data-i18n="store.buy"></button>`;
+      card.querySelector(".thumb").innerHTML = it.art; // our own SVG strings, not user input
+      card.querySelector(".name").textContent = it.name;
+      const btn = card.querySelector("button");
+      btn.textContent = t("store.buy");
+      btn.addEventListener("click", (e) => buy(it.id, e.target));
+      grid.appendChild(card);
+    }
+
+    // Buy: tell OUR backend what we want and which flow we're demoing. It
+    // answers with an order that already carries Fintar's checkout_url.
+    async function buy(itemId, btn) {
+      btn.disabled = true;
+      btn.textContent = t("store.creating");
+      try {
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ item_id: itemId, case: CASE }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || res.status);
+
+        if (CASE === "redirect") {
+          // Case 1: straight to checkout, nothing else. (This is also why
+          // the shop never learns about the payment.)
+          location.href = data.checkout_url;
+        } else {
+          // Cases 2 & 3: go to OUR order page — the confirmation shows the
+          // merchant_ref Fintar echoed back (our order ID, so refs line up
+          // between our logs and Fintar's dashboard) and watches the status
+          // live. The hosted checkout it links to renders our order_items.
+          location.href = "order.html?id=" + encodeURIComponent(data.id);
+        }
+      } catch (err) {
+        alert(t("store.fail") + err.message);
+        btn.disabled = false;
+        btn.textContent = t("store.buy");
+      }
+    }
+  </script>
+  <script src="diagram.js"></script>
+  <script src="flow.js" defer></script>
+</body>
+</html>

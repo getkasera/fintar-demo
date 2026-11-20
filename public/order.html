@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
+  <title data-i18n="title.order">Status pesanan · demo Fintar</title>
+  <script>
+    // Theme before first paint. Light like fintar.id unless the visitor picked dark.
+    if (localStorage.getItem("theme") === "dark")
+      document.documentElement.dataset.theme = "dark";
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a class="brand" href="index.html" aria-label="Fintar demo"><img class="logo-light" src="brand/logo.svg" width="128" height="28" alt="Fintar"><img class="logo-dark" src="brand/logo-white.svg" width="128" height="28" alt=""><span class="brand-tag">Demo</span></a>
+      <a href="nonapi.html" data-i18n="nav.case0">0 · Tanpa kode</a>
+      <a href="store.html?case=redirect" data-i18n="nav.case1">1 · Redirect</a>
+      <a href="store.html?case=webhook" data-i18n="nav.case2">2 · Webhook</a>
+      <a href="store.html?case=polling" data-i18n="nav.case3">3 · Polling</a>
+      <a href="langganan.html" data-i18n="nav.case4">4 · Langganan</a>
+      <button id="lang-toggle" class="toggle" title="Bahasa / Language"></button>
+      <button id="theme-toggle" class="toggle" title="Tema / Theme"></button>
+    </nav>
+  </header>
+
+  <main>
+    <h1 data-i18n="order.h1">Pesanan Anda</h1>
+    <div class="note" id="case-copy" data-i18n="order.loading">Memuat…</div>
+
+    <dl class="order" id="order" hidden>
+      <dt data-i18n="order.item">Barang</dt><dd id="o-item"></dd>
+      <dt data-i18n="order.amount">Jumlah</dt><dd id="o-amount"></dd>
+      <dt data-i18n="order.id">ID pesanan</dt><dd><code id="o-id"></code></dd>
+      <dt data-i18n="order.mref">Ref merchant</dt><dd><code id="o-mref"></code></dd>
+      <dt data-i18n="order.payreq">Payment request Fintar</dt><dd><code id="o-payreq"></code></dd>
+      <dt data-i18n="order.status">Status</dt><dd><span class="status" id="o-status"></span></dd>
+    </dl>
+
+    <p id="pay-line" hidden>
+      <a id="pay-link" href="#" target="_blank" rel="noopener">
+        <button data-i18n="order.pay">Bayar sekarang — buka checkout Fintar</button>
+      </a>
+      <br><span class="muted" data-i18n="order.payhint">Bayar di tab
+      satunya, lalu pantau halaman ini — status di bawah diperbarui
+      otomatis.</span>
+    </p>
+
+    <p id="gone" class="muted" data-i18n="order.gone" hidden>
+      Pesanan tidak ditemukan. Pesanan hidup di memori backend demo dan
+      hilang saat backend di-restart — kembali ke
+      <a href="store.html?case=webhook">toko</a> dan buat yang baru.
+    </p>
+  </main>
+
+  <footer>
+    <span data-i18n="footer.tag">Toko demo Fintar</span> —
+    <a href="https://github.com/getkasera/fintar-demo/blob/main/public/order.html"
+       data-i18n="footer.page">kode halaman ini</a> ·
+    <a href="https://github.com/getkasera/fintar-demo/blob/main/main.go">main.go</a> ·
+    <a href="https://github.com/getkasera/fintar-demo" data-i18n="footer.repo">repo GitHub</a>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="store.js"></script>
+  <script>
+    // Two ways to arrive here: our own store links use ?id=..., Fintar's
+    // checkout redirect-back uses the return_url we gave it, which carries
+    // ?order=... (plus Fintar's own ?id=payreq_...&status=succeeded).
+    const params = new URLSearchParams(location.search);
+    const id = params.get("order") || params.get("id");
+
+    // NEVER trust ?status=succeeded. It is a query parameter — anyone can type
+    // it into the address bar; it proves nothing about money moving. It is
+    // only a hint that we arrived via the checkout's redirect-back. The
+    // status rendered below always comes from GET /api/orders/:id — our
+    // backend, which learned about payment through a channel a buyer cannot
+    // forge (signed webhook, or asking Fintar directly).
+    const cameBack = params.get("status") === "succeeded";
+
+    // What this page's polling actually MEANS differs per case, and the
+    // demo is honest about it. Both languages; static strings are in
+    // i18n.js, this copy belongs to this page.
+    const COPY = {
+      id: {
+        redirect: `<strong>Case 1 — redirect.</strong> Checkout Fintar kini
+          bisa mengirim pembeli kembali ke sini (<code>return_url</code>,
+          dengan <code>?status=succeeded</code> ditambahkan) — tapi parameter
+          query bukan bukti pembayaran, jadi halaman ini tetap hanya
+          menampilkan apa kata <em>backend kami</em>. Dan pada alur
+          redirect-saja <em>tidak ada yang pernah memperbarui backend</em> —
+          status di bawah diam di pending selamanya, bahkan setelah Anda
+          membayar. Bukan bug: inilah keterbatasan yang diselesaikan kasus
+          <a href="store.html?case=webhook">webhook</a> dan
+          <a href="store.html?case=polling">polling</a>.`,
+        webhook: `<strong>Case 2 — webhook.</strong> Halaman ini hanya
+          mem-polling <em>backend kami</em>; browser tidak pernah bicara
+          dengan Fintar. Backend pun tidak berbuat apa-apa — ia menunggu
+          webhook <code>payment.paid</code> bertanda tangan dari Fintar.
+          Saat webhook itu tiba (dan tanda tangan HMAC-nya cocok), status
+          berubah menjadi paid.
+          <span class="muted">Catatan dev lokal: Fintar mewajibkan URL
+          webhook https publik, jadi pakai tunnel (ngrok dsb.) — lihat
+          README.</span>`,
+        polling: `<strong>Case 3 — polling.</strong> Setiap pembaruan yang
+          Anda lihat di sini adalah backend kami bertanya ke Fintar
+          <code>GET /v1/transactions/:id</code> lalu meneruskan
+          jawabannya. Tanpa webhook, tanpa URL publik — cuma bertanya.`,
+        cameBack: `<strong>Selamat datang kembali dari checkout.</strong>
+          URL-nya bilang <code>status=succeeded</code>, tapi itu cuma parameter
+          query — status di bawah dikonfirmasi dulu ke backend kami sebelum
+          kami percaya. `,
+      },
+      en: {
+        redirect: `<strong>Case 1 — redirect.</strong> Fintar's checkout can
+          now send the buyer back here (<code>return_url</code>, with
+          <code>?status=succeeded</code> appended) — but a query parameter is not
+          proof of payment, so this page still only shows what <em>our
+          backend</em> says. And in the redirect-only flow <em>nothing ever
+          updates the backend</em> — the status below sits at pending forever,
+          even after you pay. Not a bug: it's the limitation the
+          <a href="store.html?case=webhook">webhook</a> and
+          <a href="store.html?case=polling">polling</a> cases solve.`,
+        webhook: `<strong>Case 2 — webhook.</strong> This page polls
+          <em>our backend only</em>; the browser never talks to Fintar. The
+          backend, in turn, does nothing either — it waits for Fintar's signed
+          <code>payment.paid</code> webhook. When that lands (and its HMAC
+          signature checks out), the status flips to paid.
+          <span class="muted">Local dev note: Fintar requires a public https
+          webhook URL, so use a tunnel (ngrok etc.) — see the README.</span>`,
+        polling: `<strong>Case 3 — polling.</strong> Every refresh you see here
+          is our backend asking Fintar
+          <code>GET /v1/transactions/:id</code> and relaying the answer.
+          No webhook, no public URL — just questions.`,
+        cameBack: `<strong>Welcome back from checkout.</strong> The URL says
+          <code>status=succeeded</code>, but that's just a query parameter — the
+          status below is confirmed with our backend before we believe it. `,
+      },
+    };
+
+    const $ = (s) => document.querySelector(s);
+
+    let order = null; // last response, so a language switch can re-render
+
+    function renderCopy() {
+      if (!order) return;
+      const c = COPY[lang()];
+      let copy = c[order.case] || "";
+      if (cameBack) copy = c.cameBack + copy;
+      const el = $("#case-copy");
+      el.removeAttribute("data-i18n"); // stop applyI18n resetting it to "Memuat…"
+      el.innerHTML = copy;
+    }
+    document.addEventListener("langchange", renderCopy);
+
+    async function refresh() {
+      const res = await fetch("/api/orders/" + encodeURIComponent(id));
+      if (!res.ok) {
+        $("#gone").hidden = false;
+        $("#case-copy").removeAttribute("data-i18n");
+        $("#case-copy").textContent = "";
+        return; // stop polling — the order is not coming back
+      }
+      order = await res.json();
+
+      renderCopy();
+      $("#o-item").textContent = order.item_name;
+      $("#o-amount").textContent = formatRupiah(order.amount);
+      $("#o-id").textContent = order.id;
+      $("#o-mref").textContent = order.merchant_ref || order.id;
+      $("#o-payreq").textContent = order.payment_request_id;
+      const st = $("#o-status");
+      st.textContent = order.status;
+      st.className = "status " + order.status;
+      $("#order").hidden = false;
+
+      // Offer the checkout link while there is still something to pay.
+      $("#pay-line").hidden = order.status !== "pending";
+      $("#pay-link").href = order.checkout_url;
+
+      // Keep watching until the order settles.
+      if (order.status === "pending") setTimeout(refresh, 2500);
+    }
+
+    if (id) refresh(); else $("#gone").hidden = false;
+  </script>
+</body>
+</html>

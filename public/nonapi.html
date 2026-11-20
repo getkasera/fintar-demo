@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
+  <title data-i18n="title.nonapi">Case 0 — tanpa kode · demo Fintar</title>
+  <script>
+    // Theme before first paint. Light like fintar.id unless the visitor picked dark.
+    if (localStorage.getItem("theme") === "dark")
+      document.documentElement.dataset.theme = "dark";
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a class="brand" href="index.html" aria-label="Fintar demo"><img class="logo-light" src="brand/logo.svg" width="128" height="28" alt="Fintar"><img class="logo-dark" src="brand/logo-white.svg" width="128" height="28" alt=""><span class="brand-tag">Demo</span></a>
+      <a href="nonapi.html" data-i18n="nav.case0">0 · Tanpa kode</a>
+      <a href="store.html?case=redirect" data-i18n="nav.case1">1 · Redirect</a>
+      <a href="store.html?case=webhook" data-i18n="nav.case2">2 · Webhook</a>
+      <a href="store.html?case=polling" data-i18n="nav.case3">3 · Polling</a>
+      <a href="langganan.html" data-i18n="nav.case4">4 · Langganan</a>
+      <button id="lang-toggle" class="toggle" title="Bahasa / Language"></button>
+      <button id="theme-toggle" class="toggle" title="Tema / Theme"></button>
+    </nav>
+  </header>
+
+  <main>
+    <h1 data-i18n="nonapi.h1">Case 0 — untuk ini Anda tidak butuh kode</h1>
+
+    <p data-i18n="nonapi.lede">
+      Sebelum menulis satu baris kode integrasi pun, ketahuilah bahwa
+      seluruh alurnya sudah jalan dari dashboard:
+    </p>
+
+    <ol>
+      <li data-i18n="nonapi.step1">Buka <strong>dashboard Fintar</strong>
+        dan buat payment request: jumlah, deskripsi, selesai.</li>
+      <li data-i18n="nonapi.step2">Dashboard memberi Anda <strong>tautan
+        checkout</strong> dan <strong>kode QRIS</strong>.</li>
+      <li data-i18n="nonapi.step3">Bagikan tautannya lewat WhatsApp, tempel
+        di invoice, atau cetak QR-nya dan tempel di meja kasir.</li>
+      <li data-i18n="nonapi.step4">Pembeli membayar; di dashboard status
+        berubah menjadi <span class="status paid">paid</span>, dan Anda bisa
+        menerima notifikasi.</li>
+    </ol>
+
+    <div data-flow data-case="nocode" class="flow-slot"></div>
+
+    <!-- Who talks to whom — rendered by diagram.js with mermaid from a
+         pinned CDN; if that CDN is unreachable, this readable source is
+         what you see instead, in the current language. The <pre> holds the
+         English source; the <template> after it holds the Indonesian one.
+         Note what is absent: a shop backend. -->
+    <pre class="mermaid">
+sequenceDiagram
+    actor M as Merchant
+    participant D as Fintar dashboard
+    actor B as Buyer
+    M->>D: create payment link (amount, description)
+    D-->>M: checkout link + QRIS code
+    M->>B: share it - WhatsApp, invoice, printed QR
+    B->>D: open checkout - pay QRIS
+    D-->>M: status flips to paid (+ notification)
+    Note over M,B: no shop backend anywhere in this flow
+    </pre>
+    <template class="mermaid-id">
+sequenceDiagram
+    actor M as Pedagang
+    participant D as Dashboard Fintar
+    actor B as Pembeli
+    M->>D: buat tautan pembayaran (jumlah, deskripsi)
+    D-->>M: tautan checkout + kode QRIS
+    M->>B: bagikan - WhatsApp, invoice, QR cetak
+    B->>D: buka checkout - bayar QRIS
+    D-->>M: status berubah jadi paid (+ notifikasi)
+    Note over M,B: tidak ada backend toko sama sekali di alur ini
+    </template>
+
+    <div class="note" data-i18n="nonapi.note">
+      <strong>Coba langsung:</strong> tautan pembayaran yang dibagikan
+      berbentuk <code>https://app.fintar.id/p/&lt;token&gt;</code> — untuk
+      stack dev lokal, <code>http://localhost:8888/p/&lt;token&gt;</code>.
+      <em>(Placeholder: buat satu di dashboard Anda dan tempel di sini.)</em>
+    </div>
+
+    <p data-i18n="nonapi.outro">
+      Inilah "integrasi" yang pas untuk warung, bazar kue, atau siapa pun
+      yang volume pesanannya masih muat di kepala. Kasus API (1–3) ada untuk
+      saat Anda ingin <em>situs Anda sendiri</em> yang membuat tautan ini dan
+      bereaksi terhadap pembayaran secara otomatis — persis yang ditunjukkan
+      sisa demo ini.
+    </p>
+
+    <p><a href="store.html?case=redirect" data-i18n="nonapi.next">Berikutnya:
+      Case 1, integrasi API paling sederhana →</a></p>
+  </main>
+
+  <footer>
+    <span data-i18n="footer.tag">Toko demo Fintar</span> —
+    <a href="https://github.com/getkasera/fintar-demo/blob/main/public/nonapi.html"
+       data-i18n="footer.page">kode halaman ini</a> ·
+    <a href="https://github.com/getkasera/fintar-demo/blob/main/main.go">main.go</a> ·
+    <a href="https://github.com/getkasera/fintar-demo" data-i18n="footer.repo">repo GitHub</a>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="store.js"></script>
+  <script src="diagram.js"></script>
+  <script src="flow.js" defer></script>
+</body>
+</html>

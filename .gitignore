@@ -1,0 +1,10 @@
+# Secrets live in .env only — never commit it. Copy .env.example instead.
+.env
+
+# Compiled binary
+fintar-demo
+design/
+
+# Stale binary from the copy, and the flow bundle's deps (public/flow.js is committed)
+kasera-pay-demo
+web/node_modules/

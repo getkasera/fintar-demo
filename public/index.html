@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
+  <title data-i18n="title.index">Demo Fintar — empat cara menerima pembayaran</title>
+  <script>
+    // Theme before first paint. Light like fintar.id unless the visitor picked dark.
+    if (localStorage.getItem("theme") === "dark")
+      document.documentElement.dataset.theme = "dark";
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a class="brand" href="index.html" aria-label="Fintar demo"><img class="logo-light" src="brand/logo.svg" width="128" height="28" alt="Fintar"><img class="logo-dark" src="brand/logo-white.svg" width="128" height="28" alt=""><span class="brand-tag">Demo</span></a>
+      <a href="nonapi.html" data-i18n="nav.case0">0 · Tanpa kode</a>
+      <a href="store.html?case=redirect" data-i18n="nav.case1">1 · Redirect</a>
+      <a href="store.html?case=webhook" data-i18n="nav.case2">2 · Webhook</a>
+      <a href="store.html?case=polling" data-i18n="nav.case3">3 · Polling</a>
+      <a href="langganan.html" data-i18n="nav.case4">4 · Langganan</a>
+      <button id="lang-toggle" class="toggle" title="Bahasa / Language"></button>
+      <button id="theme-toggle" class="toggle" title="Tema / Theme"></button>
+    </nav>
+  </header>
+
+  <main class="wide">
+    <!-- ============ Hero ============ -->
+    <div class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 4.2v3l2 1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span data-i18n="home.eyebrow">Simulasi fitur pembayaran</span></span>
+        <h1 data-i18n="home.h1">Semua cara menerima <span class="hl">pembayaran</span>
+          dengan Fintar, dalam satu tempat untuk dicoba.</h1>
+        <p class="lede" data-i18n="home.lede">Pilih satu kasus dan lihat langsung
+          cara kerjanya — tanpa mendaftar, tanpa uang sungguhan. Anda tahu persis
+          bagaimana <strong>Fintar</strong> masuk ke alur pembayaran Anda
+          sebelum menulis satu baris kode pun.</p>
+        <div class="links">
+          <a class="btn primary" href="store.html?case=webhook" data-i18n="home.cta">Coba demo →</a>
+          <a class="btn" href="https://fintar.id" target="_blank" rel="noopener">fintar.id →</a>
+          <a class="btn" href="https://github.com/getkasera/fintar-demo" target="_blank"
+             rel="noopener" data-i18n="home.src">Kode sumber di GitHub →</a>
+        </div>
+        <p class="sandbox-line">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M7.5 1.5 14 13H1L7.5 1.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7.5 6v3.2M7.5 11.2v.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span data-i18n="home.sandbox">Demo ini berjalan di mode sandbox — pembayaran tidak memakai uang sungguhan.</span>
+        </p>
+      </div>
+
+      <!-- QRIS payment illustration. Decorative — every fact it shows is in the copy. -->
+      <div class="hero-art" aria-hidden="true">
+        <svg width="480" height="430" viewBox="0 0 480 430" fill="none" style="max-width: 100%; height: auto">
+          <ellipse cx="245" cy="220" rx="215" ry="195" fill="var(--tint)"/>
+          <rect x="155" y="35" width="185" height="360" rx="26" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>
+          <rect x="215" y="49" width="64" height="7" rx="3.5" fill="var(--line)"/>
+          <rect x="176" y="80" width="143" height="190" rx="12" fill="var(--bg)" stroke="var(--line)" stroke-width="1.5"/>
+          <text x="247" y="106" text-anchor="middle" font-family="system-ui" font-size="15" font-weight="800" fill="var(--ink)">QRIS</text>
+          <g fill="var(--ink)">
+            <rect x="204" y="122" width="26" height="26" rx="3"/><rect x="264" y="122" width="26" height="26" rx="3"/><rect x="204" y="182" width="26" height="26" rx="3"/>
+            <rect x="240" y="126" width="8" height="8"/><rect x="240" y="142" width="8" height="8"/><rect x="252" y="134" width="8" height="8"/>
+            <rect x="240" y="160" width="8" height="8"/><rect x="256" y="160" width="8" height="8"/><rect x="272" y="160" width="8" height="8"/>
+            <rect x="212" y="160" width="8" height="8"/><rect x="228" y="160" width="8" height="8"/>
+            <rect x="240" y="176" width="8" height="8"/><rect x="252" y="188" width="8" height="8"/><rect x="266" y="180" width="10" height="10"/>
+            <rect x="280" y="194" width="8" height="8"/><rect x="240" y="196" width="8" height="8"/>
+          </g>
+          <g fill="var(--card)">
+            <rect x="211" y="129" width="12" height="12" rx="1.5"/><rect x="271" y="129" width="12" height="12" rx="1.5"/><rect x="211" y="189" width="12" height="12" rx="1.5"/>
+          </g>
+          <g fill="var(--accent)">
+            <rect x="214" y="132" width="6" height="6"/><rect x="274" y="132" width="6" height="6"/><rect x="214" y="192" width="6" height="6"/>
+          </g>
+          <text x="247" y="240" text-anchor="middle" font-family="system-ui" font-size="16" font-weight="700" fill="var(--ink)">Rp 189.000</text>
+          <text x="247" y="258" text-anchor="middle" font-family="system-ui" font-size="10.5" fill="var(--muted)">Fintar Threads</text>
+          <rect x="176" y="288" width="143" height="40" rx="10" fill="var(--accent)"/>
+          <text x="247" y="313" text-anchor="middle" font-family="system-ui" font-size="12.5" font-weight="600" fill="var(--on-accent)">Scan untuk membayar</text>
+          <path d="M120 170h60M120 170v-24M120 170v24" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 7"/>
+          <g>
+            <rect x="308" y="118" width="158" height="46" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+            <path d="M328 134l-6 10h7l-4 9 12-13h-8l5-6h-6Z" fill="var(--accent)"/>
+            <text x="344" y="138" font-family="ui-monospace, Menlo, monospace" font-size="11.5" font-weight="600" fill="var(--ink)">payment.paid</text>
+            <text x="344" y="153" font-family="system-ui" font-size="10" fill="var(--muted)">webhook · HMAC ✓</text>
+          </g>
+          <g>
+            <rect x="322" y="300" width="132" height="46" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+            <circle cx="344" cy="323" r="11" fill="var(--accent)"/>
+            <path d="M339 323l3.4 3.6 6-7" stroke="var(--on-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="362" y="320" font-family="system-ui" font-size="12" font-weight="700" fill="var(--ink)">Lunas</text>
+            <text x="362" y="335" font-family="system-ui" font-size="10" fill="var(--muted)">status: paid</text>
+          </g>
+          <path d="M340 164c22 26 24 96 6 136" stroke="var(--line)" stroke-width="1.8" stroke-dasharray="2 6" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ============ Animated flows (web/src/main.tsx, Remotion) ============ -->
+    <section class="anim section-gap">
+      <div class="kicker" data-i18n="home.anim.k">LIHAT ALURNYA</div>
+      <h2 class="section-h2" data-i18n="home.anim.h2">Setiap pesan, dari klik Beli sampai lunas</h2>
+      <p class="section-lede" data-i18n="home.anim.lede">Pilih kasus, putar, atau klik satu langkah untuk berhenti di sana.</p>
+      <div data-flow data-case="nocode" data-switcher class="flow-slot"></div>
+    </section>
+  </main>
+
+  <!-- ============ Flow strip (full-bleed band) ============ -->
+  <div class="band">
+    <div class="band-inner wide">
+      <div class="kicker" data-i18n="home.flow.k">CARA KERJANYA</div>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-head">
+            <span class="icon-tile"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="3" y="4" width="16" height="14" rx="3" stroke="var(--accent)" stroke-width="1.8"/><path d="M3 9h16M7 13.5h5" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+            <svg class="flow-arrow" width="60" height="8" viewBox="0 0 60 8" fill="none" aria-hidden="true"><path d="M0 4h52m0 0-5-3.5M52 4l-5 3.5" stroke="var(--line)" stroke-width="1.8"/></svg>
+          </div>
+          <div class="flow-t" data-i18n="home.flow.s1.t">1 · Buat payment request</div>
+          <div class="flow-p" data-i18n="home.flow.s1.p">Backend Anda memanggil <code>POST /v1/transactions</code>.</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-head">
+            <span class="icon-tile"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1" stroke="var(--accent)" stroke-width="1.8"/><rect x="4" y="13" width="6" height="6" rx="1" stroke="var(--accent)" stroke-width="1.8"/><rect x="13" y="4" width="6" height="6" rx="1" stroke="var(--accent)" stroke-width="1.8"/><path d="M13 13h2.5v2.5H13zM16.5 16.5H19V19h-2.5z" fill="var(--accent)"/></svg></span>
+            <svg class="flow-arrow" width="60" height="8" viewBox="0 0 60 8" fill="none" aria-hidden="true"><path d="M0 4h52m0 0-5-3.5M52 4l-5 3.5" stroke="var(--line)" stroke-width="1.8"/></svg>
+          </div>
+          <div class="flow-t" data-i18n="home.flow.s2.t">2 · Pembeli scan QRIS</div>
+          <div class="flow-p" data-i18n="home.flow.s2.p">Checkout yang di-host Fintar — dari aplikasi bank atau e-wallet mana pun.</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-head">
+            <span class="icon-tile"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M12.5 3 6 12h5l-2.5 7L16 9.5h-5l3-6.5h-1.5Z" stroke="var(--accent)" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+            <svg class="flow-arrow" width="60" height="8" viewBox="0 0 60 8" fill="none" aria-hidden="true"><path d="M0 4h52m0 0-5-3.5M52 4l-5 3.5" stroke="var(--line)" stroke-width="1.8"/></svg>
+          </div>
+          <div class="flow-t" data-i18n="home.flow.s3.t">3 · Fintar memberi tahu</div>
+          <div class="flow-p" data-i18n="home.flow.s3.p">Webhook <code>payment.paid</code> bertanda tangan — atau server Anda yang bertanya.</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-head">
+            <span class="icon-tile filled"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M5 11.5l4.2 4.5L17 6.5" stroke="var(--on-accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+          <div class="flow-t" data-i18n="home.flow.s4.t">4 · Pesanan lunas</div>
+          <div class="flow-p" data-i18n="home.flow.s4.p">Status berubah menjadi <strong class="hl">paid</strong> — uang menuju rekening Anda.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container wide">
+    <!-- ============ Case cards ============ -->
+    <div class="kicker" data-i18n="home.cases.k">LIMA KASUSNYA</div>
+    <h2 class="section-h2" data-i18n="home.cases.h2">Dari nol kode sampai alur produksi</h2>
+    <p class="section-lede" data-i18n="home.cases.lede">Toko yang sama dibangun lima
+      kali — satu untuk tiap cara integrasi.</p>
+
+    <div class="cases">
+      <a href="nonapi.html">
+        <svg class="case-ic" width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M10.5 15.5 15.5 10.5M9 12l-2.8 2.8a3.7 3.7 0 0 0 5.2 5.2L14 17.4M17 14l2.8-2.8a3.7 3.7 0 0 0-5.2-5.2L12 8.6" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <div class="k">CASE 0 <span class="badge" data-i18n="home.badge0">Panduan singkat</span></div>
+        <div><strong data-i18n="home.case0.t">Tanpa API sama sekali</strong></div>
+        <p class="muted" data-i18n="home.case0.p">Buat tautan pembayaran dari
+        dashboard dan bagikan. Nol kode.</p>
+        <span class="try" data-i18n="home.try0">Lihat panduan →</span>
+      </a>
+      <a href="store.html?case=redirect">
+        <svg class="case-ic" width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M4 19V9a3 3 0 0 1 3-3h9m0 0-3.5-3.5M16 6l-3.5 3.5M10 20h9a3 3 0 0 0 3-3v-1" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="k">CASE 1 <span class="badge" data-i18n="home.badge">Demo interaktif</span></div>
+        <div><strong data-i18n="home.case1.t">Redirect saja</strong></div>
+        <p class="muted" data-i18n="home.case1.p">Backend Anda membuat
+        payment request lalu mengarahkan pembeli ke checkout. Pemakaian API
+        paling sederhana.</p>
+        <span class="try" data-i18n="home.try">Coba demo →</span>
+      </a>
+      <a href="store.html?case=webhook" class="featured">
+        <svg class="case-ic" width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M14.5 3.5 7 14h6l-3 8.5L20 11h-6l3.5-7.5h-3Z" stroke="var(--accent)" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <div class="k">CASE 2 <span class="badge accent" data-i18n="home.badge2">Cara produksi</span></div>
+        <div><strong data-i18n="home.case2.t">Webhook</strong></div>
+        <p class="muted" data-i18n="home.case2.p">Fintar memanggil server
+        Anda begitu pembayaran masuk — bertanda tangan, terverifikasi,
+        at-least-once. Cara produksi.</p>
+        <span class="try" data-i18n="home.try">Coba demo →</span>
+      </a>
+      <a href="store.html?case=polling">
+        <svg class="case-ic" width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M21 13a8 8 0 1 1-2.3-5.6M21 4v4.5h-4.5" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="k">CASE 3 <span class="badge" data-i18n="home.badge">Demo interaktif</span></div>
+        <div><strong data-i18n="home.case3.t">Polling</strong></div>
+        <p class="muted" data-i18n="home.case3.p">Server Anda bertanya ke
+        Fintar "sudah dibayar?" sampai terjawab. Tanpa URL publik — pas untuk
+        pengembangan lokal.</p>
+        <span class="try" data-i18n="home.try">Coba demo →</span>
+      </a>
+      <a href="langganan.html">
+        <svg class="case-ic" width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M20.5 13a7.5 7.5 0 1 1-2.2-5.3M20.5 5v3.5H17M13 9v4.5l3 1.5" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="k">CASE 4 <span class="badge" data-i18n="home.badge">Demo interaktif</span></div>
+        <div><strong data-i18n="home.case4.t">Langganan</strong></div>
+        <p class="muted" data-i18n="home.case4.p">Plan bulanan, customer, subscription —
+        Fintar menerbitkan tagihan tiap periode. Majukan jam sandbox dan lihat
+        perpanjangannya hari ini.</p>
+        <span class="try" data-i18n="home.try">Coba demo →</span>
+      </a>
+    </div>
+
+    <!-- ============ Shop preview ============ -->
+    <div class="shop-head section-gap">
+      <div>
+        <div class="kicker" data-i18n="home.shop.k">TOKO DEMONYA</div>
+        <h2 class="section-h2">Fintar Threads</h2>
+        <p class="section-lede" data-i18n="home.shop.lede">Toko kaos yang
+          benar-benar berjalan — tiap tombol Beli membuat payment request
+          sungguhan di mode sandbox.</p>
+      </div>
+      <a class="try" href="store.html?case=webhook" data-i18n="home.shop.cta">Buka toko →</a>
+    </div>
+
+    <div class="grid" id="preview-items"></div>
+  </div>
+
+  <footer>
+    <span data-i18n="footer.tag">Toko demo Fintar</span> —
+    <a href="https://github.com/getkasera/fintar-demo/blob/main/public/index.html"
+       data-i18n="footer.page">kode halaman ini</a> ·
+    <a href="https://github.com/getkasera/fintar-demo/blob/main/main.go">main.go</a> ·
+    <a href="https://github.com/getkasera/fintar-demo" data-i18n="footer.repo">repo GitHub</a>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="store.js"></script>
+  <script src="flow.js" defer></script>
+  <script>
+    // Landing shop preview: first four catalog items, linking into the store.
+    const grid = document.getElementById("preview-items");
+    for (const it of ITEMS.slice(0, 4)) {
+      const card = document.createElement("a");
+      card.className = "card";
+      card.href = "store.html?case=webhook";
+      card.innerHTML = `
+        <div class="thumb"></div>
+        <div class="name"></div>
+        <div class="price">${formatRupiah(it.price)}</div>`;
+      card.querySelector(".thumb").innerHTML = it.art; // our own SVG strings, not user input
+      card.querySelector(".name").textContent = it.name;
+      grid.appendChild(card);
+    }
+  </script>
+</body>
+</html>
