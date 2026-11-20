@@ -218,3 +218,14 @@ the source:
 ```sh
 cd web && npm ci && npm run build   # writes ../public/flow.js
 ```
+
+## Deploy (demo.fintar.id)
+
+Runs as the `fintar-demo` ECS service on the shared cluster, behind the ALB at
+demo.fintar.id (Terraform: getkasera/fintar `infra/terraform/web/demo.tf`).
+Secrets come from SSM `/fintar/demo/*`. Ship from a clean, pushed commit:
+
+```sh
+eval "$(aws configure export-credentials --profile pay-admin --format env)"
+scripts/deploy.sh
+```
